@@ -10,7 +10,8 @@ function App() {
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const API = "http://127.0.0.1:8000";
+  // ✅ YOUR NGROK BACKEND LINK
+  const API = "https://melismatic-subobscurely-miki.ngrok-free.dev";
 
   const handleSubmit = async () => {
     try {
@@ -19,7 +20,7 @@ function App() {
 
       let response;
 
-      // -------- PDF --------
+      // ---------- PDF ----------
       if (file) {
         const formData = new FormData();
         formData.append("file", file);
@@ -43,10 +44,11 @@ function App() {
         }
       }
 
-      // -------- TEXT --------
+      // ---------- TEXT ----------
       else {
         if (!text.trim()) {
-          alert("Please enter text or upload PDF");
+          alert("⚠️ Please enter text or upload PDF");
+          setLoading(false);
           return;
         }
 
@@ -69,8 +71,8 @@ function App() {
         }
       }
     } catch (error) {
-      console.error(error);
-      alert("Backend not connected ⚠️");
+      console.error("ERROR:", error);
+      alert("❌ Backend not connected or ngrok stopped");
     } finally {
       setLoading(false);
     }
@@ -78,7 +80,13 @@ function App() {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(result);
-    alert("Copied to clipboard ✅");
+    alert("✅ Copied to clipboard");
+  };
+
+  const clearAll = () => {
+    setText("");
+    setFile(null);
+    setResult("");
   };
 
   return (
@@ -91,16 +99,25 @@ function App() {
         onChange={(e) => setText(e.target.value)}
       />
 
-      <input type="file" onChange={(e) => setFile(e.target.files[0])} />
+      <input
+        type="file"
+        onChange={(e) => setFile(e.target.files[0])}
+      />
 
-      <select onChange={(e) => setOperation(e.target.value)}>
+      <select
+        value={operation}
+        onChange={(e) => setOperation(e.target.value)}
+      >
         <option value="simplify">Simplify</option>
         <option value="summarize">Summarize</option>
         <option value="translate">Translate</option>
       </select>
 
       {operation === "translate" && (
-        <select onChange={(e) => setLanguage(e.target.value)}>
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+        >
           <option value="hindi">Hindi</option>
           <option value="telugu">Telugu</option>
           <option value="tamil">Tamil</option>
@@ -115,14 +132,22 @@ function App() {
       )}
 
       <button onClick={handleSubmit} disabled={loading}>
-        {loading ? "Processing..." : "Run 🚀"}
+        {loading ? "⏳ Processing..." : "Run 🚀"}
       </button>
 
-      {loading && <div className="loader">⏳ Processing your request...</div>}
+      <button className="clear-btn" onClick={clearAll}>
+        Clear 🧹
+      </button>
+
+      {loading && (
+        <div className="loader">
+          ⏳ Processing your request...
+        </div>
+      )}
 
       <div className="output">
         <h3>Output:</h3>
-        {result || "Your result will appear here..."}
+        <p>{result || "Your result will appear here..."}</p>
       </div>
 
       {result && (
